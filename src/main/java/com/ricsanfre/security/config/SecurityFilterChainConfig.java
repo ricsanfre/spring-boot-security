@@ -10,10 +10,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-<<<<<<< HEAD
-=======
 import org.springframework.security.core.context.SecurityContextHolder;
->>>>>>> ebd6bf9 (Securing API with JWT tokens and logout implementation)
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -25,10 +22,7 @@ public class SecurityFilterChainConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
-<<<<<<< HEAD
-=======
     private final LogoutService logoutService;
->>>>>>> ebd6bf9 (Securing API with JWT tokens and logout implementation)
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -59,11 +53,6 @@ public class SecurityFilterChainConfig {
                 )
                 .authenticationProvider(authenticationProvider)
                 // Add JWT Filter before UsernamePasswordAuthenticationFilter (used for form based authentication)
-<<<<<<< HEAD
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-                //.exceptionHandling((httpSecurityExceptionHandlingConfigurer) ->
-                //        httpSecurityExceptionHandlingConfigurer.authenticationEntryPoint(authenticationEntryPoint));
-=======
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 //.exceptionHandling((httpSecurityExceptionHandlingConfigurer) ->
                 //        httpSecurityExceptionHandlingConfigurer.authenticationEntryPoint(authenticationEntryPoint));
@@ -75,9 +64,6 @@ public class SecurityFilterChainConfig {
                         SecurityContextHolder.clearContext();
                     });
                 } );
-
-
->>>>>>> ebd6bf9 (Securing API with JWT tokens and logout implementation)
         return http.build();
     }
 }

@@ -1,10 +1,7 @@
 package com.ricsanfre.security.jwt;
 
-<<<<<<< HEAD
-=======
 import com.ricsanfre.security.token.Token;
 import com.ricsanfre.security.token.TokenRepository;
->>>>>>> ebd6bf9 (Securing API with JWT tokens and logout implementation)
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,10 +23,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-<<<<<<< HEAD
-=======
     private final TokenRepository tokenRepository;
->>>>>>> ebd6bf9 (Securing API with JWT tokens and logout implementation)
     private final UserDetailsService userDetailsService;
 
     @Override
@@ -52,10 +46,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (userEmail !=null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // Get User details from DB
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-<<<<<<< HEAD
-            // Check if token is valid
-            if (jwtService.isValidToken(jwt, userDetails)) {
-=======
             // Check if the token is in DB
             boolean isValidToken = tokenRepository.findByToken(jwt)
                     .map(token -> !token.isExpired() && !token.isRevoked())
@@ -63,7 +53,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // Check if token is valid
             if (jwtService.isValidToken(jwt, userDetails) && isValidToken) {
->>>>>>> ebd6bf9 (Securing API with JWT tokens and logout implementation)
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
