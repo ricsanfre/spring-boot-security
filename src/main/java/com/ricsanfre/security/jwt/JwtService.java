@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -17,15 +18,37 @@ import java.util.Map;
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY="616c572e4bd29e89fd9cf3536249841801e316cdbdde5f26cb9976f8f93461f6";
+    @Value("${application.security.jwt.secret-key}")
+    private String secretKey;
+
+    @Value("${application.security.jwt.access-token.expiration}")
+    private long jwtExpiration;
+
+    @Value("${application.security.jwt.refresh-token.expiration}")
+    private long refreshExpiration;
 
     public String issueToken(UserDetails userDetails) {
+
         return issueToken(Map.of(), userDetails);
     }
 
     public String issueToken(
             Map<String, Object> claims,
             UserDetails userDetails) {
+        return buildToken(claims, userDetails, jwtExpiration);
+
+    }
+
+    public String issueRefreshToken(
+            UserDetails userDetails) {
+        return buildToken(Map.of(), userDetails, refreshExpiration);
+
+    }
+
+    private String buildToken(
+            Map<String, Object> claims,
+            UserDetails userDetails,
+            long expiration) {
         return Jwts
                 .builder()
                 .claims(claims)
@@ -34,7 +57,7 @@ public class JwtService {
                 .issuedAt(Date.from(Instant.now()))
                 .expiration(
                         Date.from(
-                                Instant.now().plus(24, ChronoUnit.HOURS)
+                                Instant.now().plus(expiration, ChronoUnit.MILLIS)
                         )
                 )
                 .signWith(getSigningKey())
@@ -56,7 +79,7 @@ public class JwtService {
 
     // JWTs are going to be signed using a secret (with the HMAC algorithm)
     private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 

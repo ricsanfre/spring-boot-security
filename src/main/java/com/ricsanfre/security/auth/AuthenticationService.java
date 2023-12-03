@@ -10,8 +10,12 @@ import com.ricsanfre.security.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -37,15 +41,18 @@ public class AuthenticationService {
 
         // Save user into DB
         User savedUser = userRepository.save(user);
-        // Generate JWT token
+        // Generate Access JWT token
         String jwtToken = jwtService.issueToken(user);
+        // Generate Refresh JWT token
+        String refreshToken = jwtService.issueRefreshToken(user);
 
         // Save user Token into DB
         saveUserToken(savedUser, jwtToken);
 
-        // Include jwt Token in the Response
+        // Include jwt Tokens (access and refresh) in the Response
         return AuthenticationResponse.builder()
-                .token(jwtToken)
+                .accessToken(jwtToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 
@@ -53,21 +60,24 @@ public class AuthenticationService {
 
         // Authenticate user
         authenticationManager.authenticate(
-               new UsernamePasswordAuthenticationToken(
+                new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword()
                 )
         );
         // Get user from DB
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-        // Generate JWT token
+        // Generate JWT tokens
         String jwtToken = jwtService.issueToken(user);
+        String refreshToken = jwtService.issueRefreshToken(user);
+
         // revoke existing tokens in DB
         revokeAllUserTokens(user);
         // Save token into DB
-        saveUserToken(user,jwtToken);
+        saveUserToken(user, jwtToken);
         return AuthenticationResponse.builder()
-                .token(jwtToken)
+                .accessToken(jwtToken)
+                .refreshToken(refreshToken)
                 .build();
 
     }
@@ -97,5 +107,35 @@ public class AuthenticationService {
         tokenRepository.saveAll(validUserTokens);
 
 
+    }
+
+    public AuthenticationResponse refreshToken(String authHeader) {
+        final String refreshToken;
+        final String userEmail;
+
+        if (authHeader == null || authHeader.startsWith("Bearer ")) {
+            // Get token: removing "Bearer " string
+            refreshToken = authHeader.substring(7);
+            // Get user email from token
+            userEmail = jwtService.getSubject(refreshToken);
+            if (userEmail != null) {
+                // Get User details from DB
+                User user = this.userRepository.findByEmail(userEmail).orElseThrow();
+                // Check if token is valid
+                if (jwtService.isValidToken(refreshToken, user)) {
+                    String accessToken = jwtService.issueToken(user);
+                    // revoke existing tokens in DB
+                    revokeAllUserTokens(user);
+                    // Save token into DB
+                    saveUserToken(user, accessToken);
+                    return AuthenticationResponse.builder()
+                            .accessToken(accessToken)
+                            .refreshToken(refreshToken)
+                            .build();
+
+                }
+            }
+        }
+        return AuthenticationResponse.builder().build();
     }
 }
