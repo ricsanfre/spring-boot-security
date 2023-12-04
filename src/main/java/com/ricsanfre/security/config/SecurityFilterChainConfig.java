@@ -1,5 +1,7 @@
 package com.ricsanfre.security.config;
 
+import com.ricsanfre.security.user.Permissions;
+import com.ricsanfre.security.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,12 +37,65 @@ public class SecurityFilterChainConfig {
                 .csrf((csrf) -> csrf.disable())
                 // Cors config
                 .cors(Customizer.withDefaults())
-                // Authorize registerCustomer API without requiring authentication
+                // Http Request authorization
                 .authorizeHttpRequests((authorize) -> {
                     authorize.requestMatchers(
                                     HttpMethod.POST,
                                     "/api/v1/auth/**")
                             .permitAll();
+                    authorize.requestMatchers("/api/v1/management/**")
+                            .hasAnyRole(
+                                    Role.ADMIN.name(),
+                                    Role.MANAGER.name());
+                    authorize.requestMatchers(
+                                    HttpMethod.GET,
+                                    "/api/v1/management/**")
+                            .hasAnyAuthority(
+                                    Permissions.ADMIN_READ.name(),
+                                    Permissions.MANAGER_READ.name());
+                    authorize.requestMatchers(
+                                    HttpMethod.POST,
+                                    "/api/v1/management/**")
+                            .hasAnyAuthority(
+                                    Permissions.ADMIN_CREATE.name(),
+                                    Permissions.MANAGER_CREATE.name());
+                    authorize.requestMatchers(
+                                    HttpMethod.PUT,
+                                    "/api/v1/management/**")
+                            .hasAnyAuthority(
+                                    Permissions.ADMIN_UPDATE.name(),
+                                    Permissions.MANAGER_UPDATE.name());
+                    authorize.requestMatchers(
+                                    HttpMethod.DELETE,
+                                    "/api/v1/management/**")
+                            .hasAnyAuthority(
+                                    Permissions.ADMIN_DELETE.name(),
+                                    Permissions.MANAGER_DELETE.name());
+
+                    authorize.requestMatchers("/api/v1/admin/**")
+                            .hasRole(
+                                    Role.ADMIN.name());
+                    authorize.requestMatchers(
+                                    HttpMethod.GET,
+                                    "/api/v1/admin/**")
+                            .hasAuthority(
+                                    Permissions.ADMIN_READ.name());
+                    authorize.requestMatchers(
+                                    HttpMethod.POST,
+                                    "/api/v1/admin/**")
+                            .hasAuthority(
+                                    Permissions.ADMIN_CREATE.name());
+                    authorize.requestMatchers(
+                                    HttpMethod.PUT,
+                                    "/api/v1/admin/**")
+                            .hasAuthority(
+                                    Permissions.ADMIN_UPDATE.name());
+                    authorize.requestMatchers(
+                                    HttpMethod.DELETE,
+                                    "/api/v1/admin/**")
+                            .hasAuthority(
+                                    Permissions.ADMIN_DELETE.name());
+
                     authorize.requestMatchers(
                                     HttpMethod.GET,
                                     "/actuator/**")
