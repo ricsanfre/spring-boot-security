@@ -98,6 +98,17 @@ public class SecurityFilterChainConfig {
                             .hasAuthority(
                                     Permissions.ADMIN_DELETE.name());
                     */
+                    // Enable access to API docs endpoints
+                    authorize.requestMatchers(
+                                    "/v3/api-docs",
+                                    "/v3/api-docs/**",
+                                    "/swagger-resources",
+                                    "/swagger-resources/**",
+                                    "/configuration/ui",
+                                    "/configuration/security",
+                                    "/swagger-ui/**",
+                                    "/swagger-ui.html")
+                            .permitAll();
                     authorize.requestMatchers(
                                     HttpMethod.GET,
                                     "/actuator/**")
@@ -120,7 +131,7 @@ public class SecurityFilterChainConfig {
                     logout.logoutSuccessHandler((request, response, authentication) -> {
                         SecurityContextHolder.clearContext();
                     });
-                } );
+                });
         return http.build();
     }
 }

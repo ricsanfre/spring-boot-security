@@ -1,5 +1,7 @@
 package com.ricsanfre.security.demo;
 
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +18,7 @@ public class AdminController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('admin:create')")
+    @Hidden
     public String post() {
         return "POST:: admin controller";
     }
